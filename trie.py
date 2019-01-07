@@ -46,6 +46,30 @@ def build_trie_dict_from_file(file_name: str) -> dict:
     return trie_dict
 
 
+def build_trie_dict_from_denovo_file(file_name: str) -> dict:
+    import csv
+    trie_dict = {}
+    peptide_dict = {}
+    with open(file_name, 'r') as fr:
+        reader = csv.reader(fr, delimiter='\t')
+        header = next(reader)
+        seq_index = header.index("predicted_sequence")
+        for line in reader:
+            if not line[seq_index]:
+                continue
+            peptide = line[seq_index].split(',')
+            peptide = [x[0] for x in peptide]  # drop mod
+            length = len(peptide)
+            peptide = ''.join(peptide)
+            if length not in peptide_dict:
+                peptide_dict[length] = [peptide]
+            else:
+                peptide_dict[length].append(peptide)
+    for length, peptide_list in peptide_dict.items():
+        trie_dict[length] = build_trie_from_list(peptide_list)
+    return trie_dict
+
+
 def aa_match(aa1, aa2):
     return aa1 == aa2
 
